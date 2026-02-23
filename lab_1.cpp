@@ -1,0 +1,272 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <limits>
+
+using namespace std;
+
+class Property{
+    private:
+        string name;
+        double price;
+        int id;
+    protected:
+        string address;
+        double area;
+        double rentPrice;
+    public:
+        Property(string n, string addr, double a, double pr, int i, double rp):
+            name(n), id(i), address(addr), area(a), price(pr), rentPrice(rp) {}
+        
+        virtual ~Property() {}
+
+        string getName() {return name;}
+        void set_new_price(double newPrice) {if(newPrice>0) price = newPrice;}
+        int getid() {return id;}
+
+        virtual void show() = 0;
+};
+
+class Apartment : public Property{
+    private:
+        int floor;
+        int rooms;
+    public:
+        Apartment(string n, string addr, double a, double pr, int i, double rp, int fl, int rm):
+            Property(n, addr, a, pr, i, rp)
+            {
+                floor = fl;
+                rooms = rm;
+            }
+    
+        void show() override{
+            cout << "АПАРТАМЕНТИ Адреса: " << address << ". Квадратура: " << area << ". Поверх: " << floor << ". К-сть кімнат: " << rooms << endl;
+        }
+};
+
+class Repairable{
+    protected:
+        int last_year;
+    public:
+        Repairable(int yr) : last_year(yr) {}
+        void repair(){
+            cout << "Відремонтовано!" << endl;
+            last_year = 2026;
+        }
+};
+
+class Commercial : public Property, public Repairable{
+    private:
+        string company_name;
+        int parkingplaces;
+    public:
+        Commercial(string n, string addr, double a, double pr, int i, double rp, int yr, string cm, int pp):
+            Property(n, addr, a, pr, i, rp), Repairable(yr)
+            {
+                company_name = cm;
+                parkingplaces = pp;
+            }
+        
+        void show() override{
+            cout << "КОММЕРЦІЯ Адреса: " << address << ". Площа: " << area << ". Назва компанії: " << company_name << ". К-сть паркомісць: " << parkingplaces << ". Рік ремонту: " << last_year << endl;
+        }
+};
+
+class ownHouse : public Property, public Repairable{
+    private:
+        double outdoorsarea;
+        int floors;
+    public:
+        ownHouse(string n, string addr, double a, double pr, int i, double rp, int yr, double outa, int fls):
+            Property(n, addr, a, pr, i, rp), Repairable(yr)
+            {
+                outdoorsarea = outa;
+                floors = fls;
+            }
+        
+        void show() override{
+            cout << "ПРИВАТНІ Адреса: " <<address << ". Площа: " << area << ". Площа земельної ділянки: " <<outdoorsarea << ". Кількість поверхів: " <<floors << ". Рік ремонту: " << last_year << endl;
+        }
+};
+
+int trueint(){
+    int a;
+    while(!(cin>>a)){
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cout << "Неправильно введено! Спробуйте ще раз:" << endl; 
+    }
+    return a;
+}
+
+void addObject(vector<Property*>& objects) {
+    cout << "Який тип об'єкта додати?" << endl;
+    cout << "1. Апартаменти" << endl;
+    cout << "2. Комерційна нерухомість" << endl;
+    cout << "3. Приватний будинок" << endl;
+    cout << "Ваш вибір: ";
+    
+    int type = trueint();
+    while(type<1 || type>3){
+        cout << "Неправильний ввід! Спробуйте ще раз: ";
+        type = trueint();
+    }
+
+    string n, addr;
+    double a, pr, rp;
+    int i;
+
+    cout << "Введіть назву: ";
+    getline(cin >> ws, n);
+    cout << "Введіть адресу: ";
+    getline(cin >> ws, addr);
+    cout << "Введіть площу: ";
+    cin >> a;
+    cout << "Введіть ціну: ";
+    cin >> pr;
+    cout << "Введіть ID: ";
+    i = trueint();
+    cout << "Введіть ціну оренди: ";
+    cin >> rp;
+
+    if(type == 1){
+        int fl, rm;
+        cout << "Введіть поверх: ";
+        fl = trueint();
+        cout << "Введіть к-сть кімнат: ";
+        rm = trueint();
+        objects.push_back(new Apartment(n, addr, a, pr, i, rp, fl, rm));
+    } 
+    else if(type == 2){
+        int yr, pp;
+        string cm;
+        cout << "Введіть рік останнього ремонту: ";
+        yr = trueint();
+        cout << "Введіть назву компанії: ";
+        getline(cin >> ws, cm);
+        cout << "Введіть к-сть паркомісць: ";
+        pp = trueint();
+        objects.push_back(new Commercial(n, addr, a, pr, i, rp, yr, cm, pp));
+    } 
+    else if(type == 3){
+        int fls, yr;
+        double outa;
+        cout << "Введіть рік останнього ремонту: ";
+        yr = trueint();
+        cout << "Введіть площу ділянки: ";
+        cin >> outa;
+        cout << "Введіть к-сть поверхів: ";
+        fls = trueint();
+        objects.push_back(new ownHouse(n, addr, a, pr, i, rp, yr, outa, fls));
+    }
+    cout << "Об'єкт успішно додано!" << endl;
+}
+
+int main(){
+    vector<Property*> objects;
+
+    objects.push_back(new Apartment("Екстравагант", "вул. Князя Романа, 5", 68.4, 25000, 1, 12000, 4, 2));
+    objects.push_back(new Commercial("Незнайки", "вул. Наукова, 46", 674, 200000, 2, 67000, 2024, "SoftServe", 10));
+    objects.push_back(new ownHouse("Прескураж", "вул. Стрийська, 144", 134, 80000, 3, 0, 2022, 344.5, 2));
+
+    int choice = -1;
+    while(choice != 0){
+        cout << "Керування нерухомістю" << endl;
+        cout << "1. Показати всі об'єкти" << endl;
+        cout << "2. Змінити ціну(за ID)" << endl;
+        cout << "3. Видалити об'єкт" << endl;
+        cout << "4. Здійснити ремонт" << endl;
+        cout << "5. Додати новий об'єкт" << endl;
+        cout << "0. Вихід" << endl;
+        cout << "Ваш вибір: ";
+        
+        choice = trueint();
+        switch(choice){
+            case 1:
+                cout << "Об'єкти: " << endl;
+                for(Property* p : objects){
+                    p->show();
+                }
+                break;
+            case 2:{
+                cout << "Введіть ID об'єкта для зміни ціни: ";
+                int searchid = trueint();
+                bool found = false;
+                for(Property* p : objects){
+                    if(p->getid()==searchid){
+                        cout << "Об'єкт: " << p->getName() << ". Введіть нову ціну: ";
+                        double newPrice;
+                        cin >> newPrice;
+                        p->set_new_price(newPrice);
+                        cout << "Ціну успішно оновлено!" << endl;
+                        found = true;
+                        break;   
+                    }
+                }
+
+                if(!found){
+                    cout << "Об'єкт з ID " << searchid << " не знайдено." << endl;    
+                }
+                break;
+            }
+            case 3:{
+                cout << "Введіть назву об'єкта для видалення: ";
+                string name;
+                getline(cin >> ws, name);
+                bool found = false;
+                for(auto it = objects.begin(); it!=objects.end(); ++it){
+                    if((*it)->getName() == name){
+                        delete *it;
+                        objects.erase(it);
+                        cout << "Об'єкт успішно видалено!" << endl;
+                        found = true;
+                        break;
+                    }
+                }
+
+                if(!found){
+                    cout << "Об'єкта з назвою " << name <<  " не знайдено!" << endl;
+                }
+                break;
+            }
+            case 4:{
+                cout << "Введіть назву об'єкта для ремонту: ";
+                string name;
+                getline(cin >> ws, name);
+                bool found = false;
+
+                for (Property* p : objects) {
+                    if (p->getName() == name) {
+                        found = true;
+                        Repairable* r = dynamic_cast<Repairable*>(p);
+
+                        if(r){
+                            r->repair();
+                        }
+                        else{
+                            cout << "Об'єкт " << name << " не підлягає ремонту!" << endl;
+                        }
+                        break;
+                    }
+                }
+                if(!found){
+                    cout << "Об'єкта з назвою " << name << " не знайдено!" << endl;
+                }
+                break;
+            }
+            case 5:{
+                addObject(objects);
+                break;
+            }
+            case 0:
+                for(Property* p : objects){
+                    delete p;
+                }
+                objects.clear();
+                cout << "До зустрічі!";
+                return 0;
+            default:
+                cout << "Неправильний вибір!" << endl;
+        }
+    }
+}
