@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <limits>
+#include <iomanip>
 
 using namespace std;
 
@@ -10,19 +11,28 @@ class Property{
         string name;
         double price;
         int id;
+        bool occupied;
+        bool bought;
     protected:
         string address;
         double area;
         double rentPrice;
     public:
         Property(string n, string addr, double a, double pr, int i, double rp):
-            name(n), id(i), address(addr), area(a), price(pr), rentPrice(rp) {}
+            name(n), id(i), address(addr), area(a), price(pr), rentPrice(rp), occupied(false), bought(false) {}
         
         virtual ~Property() {}
 
         string getName() {return name;}
-        void set_new_price(double newPrice) {if(newPrice>0) price = newPrice;}
         int getid() {return id;}
+        bool get_status() {return occupied;}
+        double get_rent() {return rentPrice;}
+        double get_price() {return price;}
+        bool get_boughtness() {return bought;}
+
+        void setStatus(bool status) {occupied = status;}
+        void setboughtness(bool status) {bought = status;}
+        void set_new_price(double newPrice) {if(newPrice>0) price = newPrice;}
 
         virtual void show() = 0;
 };
@@ -40,7 +50,7 @@ class Apartment : public Property{
             }
     
         void show() override{
-            cout << "АПАРТАМЕНТИ Адреса: " << address << ". Квадратура: " << area << ". Поверх: " << floor << ". К-сть кімнат: " << rooms << endl;
+            cout << (get_boughtness() ? "[ВЛАСНІСТЬ] " : "[РИНОК] ") << (get_status() ? "[ЗАЙНЯТО]" : "[ВІЛЬНО]") << "АПАРТАМЕНТИ Адреса: " << address << ". Квадратура: " << area << ". Поверх: " << floor << ". К-сть кімнат: " << rooms << endl;
         }
 };
 
@@ -68,7 +78,7 @@ class Commercial : public Property, public Repairable{
             }
         
         void show() override{
-            cout << "КОММЕРЦІЯ Адреса: " << address << ". Площа: " << area << ". Назва компанії: " << company_name << ". К-сть паркомісць: " << parkingplaces << ". Рік ремонту: " << last_year << endl;
+            cout << (get_boughtness() ? "[ВЛАСНІСТЬ] " : "[РИНОК] ") << (get_status() ? "[ЗАЙНЯТО]" : "[ВІЛЬНО]") <<"КОММЕРЦІЯ Адреса: " << address << ". Площа: " << area << ". Назва компанії: " << company_name << ". К-сть паркомісць: " << parkingplaces << ". Рік ремонту: " << last_year << endl;
         }
 };
 
@@ -85,7 +95,7 @@ class ownHouse : public Property, public Repairable{
             }
         
         void show() override{
-            cout << "ПРИВАТНІ Адреса: " <<address << ". Площа: " << area << ". Площа земельної ділянки: " <<outdoorsarea << ". Кількість поверхів: " <<floors << ". Рік ремонту: " << last_year << endl;
+            cout << (get_boughtness() ? "[ВЛАСНІСТЬ] " : "[РИНОК] ") << (get_status() ? "[ЗАЙНЯТО]" : "[ВІЛЬНО]") << "ПРИВАТНІ Адреса: " <<address << ". Площа: " << area << ". Площа земельної ділянки: " <<outdoorsarea << ". Кількість поверхів: " <<floors << ". Рік ремонту: " << last_year << endl;
         }
 };
 
@@ -177,15 +187,23 @@ int main(){
         cout << "3. Видалити об'єкт" << endl;
         cout << "4. Здійснити ремонт" << endl;
         cout << "5. Додати новий об'єкт" << endl;
+        cout << "6. Здати в оренду/Повернути" << endl;
+        cout << "7. Придбати об'єкт" << endl;
+        cout << "8. Розрахувати прибуток" << endl;
         cout << "0. Вихід" << endl;
         cout << "Ваш вибір: ";
         
         choice = trueint();
         switch(choice){
             case 1:
-                cout << "Об'єкти: " << endl;
-                for(Property* p : objects){
-                    p->show();
+                if(objects.empty()){
+                    cout << "Поки що немає об'єктів!" << endl;
+                }
+                else{
+                    cout << "Об'єкти: " << endl;
+                    for(Property* p : objects){
+                        p->show();
+                    }
                 }
                 break;
             case 2:{
@@ -256,6 +274,62 @@ int main(){
             }
             case 5:{
                 addObject(objects);
+                break;
+            }
+            case 6:{
+                cout << "Введіть назву об'єкта: ";
+                string name;
+                getline(cin>>ws, name);
+                bool found = false;
+                for(Property* p : objects){
+                    if(p->getName() == name){
+                        p->setStatus(!p->get_status());
+                        cout << "Статус об'єкта " << name << " змінено!" << endl;;
+                        found = true;
+                        break;
+                    }
+                }
+                if(!found){
+                    cout << "Об'єкт не знайдено!" << endl;   
+                }
+                break;
+            }
+            case 7:{
+                cout << "Введіть назву об'єкта який бажаєте придбати: ";
+                string name;
+                getline(cin>>ws, name);
+                bool found = false;
+                for(Property* p : objects){
+                    if(p->getName() == name){
+                        cout << "Вартість: " << p->get_price() << " грн." << endl;
+                        cout << "Підтвердити покупку?(y/n)" << endl;
+                        string answer;
+                        do{
+                            cin >> answer;
+                        }while(answer!="y" && answer!="n");
+                        if(answer == "y"){
+                            p->setboughtness(true);
+                            cout << "Вітаю з придбанням!" << endl;
+                        }
+                        found = true;
+                        break;
+                    }
+                }
+                if(!found){
+                    cout << "Такої нерухомості не знайдено!" << endl;
+                }
+                break;
+            }
+            case 8:{
+                double totalRent = 0;
+                cout << "Пасивний дохід:" << endl;
+                for(Property* p : objects){
+                    if(p->get_status()){
+                        cout << "+ " << p->getName() << ": " << p->get_rent() << " грн." << endl;
+                        totalRent += p->get_rent();
+                    }
+                }
+                cout << "Разом за місяць: " << totalRent << " грн." << endl;
                 break;
             }
             case 0:
