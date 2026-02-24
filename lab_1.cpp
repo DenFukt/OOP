@@ -324,12 +324,46 @@ int main(){
                 double totalRent = 0;
                 cout << "Пасивний дохід:" << endl;
                 for(Property* p : objects){
-                    if(p->get_status()){
+                    if(p->get_boughtness() && p->get_status()){
                         cout << "+ " << p->getName() << ": " << p->get_rent() << " грн." << endl;
                         totalRent += p->get_rent();
                     }
                 }
                 cout << "Разом за місяць: " << totalRent << " грн." << endl;
+                break;
+            }
+            case 9:{
+                cout << "Введіть назву об'єкта для продажу: ";
+                string name;
+                getline(cin >> ws, name);
+                bool found = false;
+
+                for(Property* p : objects){
+                    if(p->getName() == name){
+                        found = true;
+                        if(p->get_boughtness()){ // Перевірка: чи він твій
+                            cout << "Об'єкт '" << name << "' зараз у вашій власності." << endl;
+                            cout << "Підтвердити продаж? (y/n): ";
+                            string answer;
+                            do{
+                                cin >> answer;
+                            }while (answer != "y" && answer != "n");
+
+                            if(answer == "y"){
+                                p->setboughtness(false);
+                                p->setStatus(false);
+                                cout << "Об'єкт успішно продано і виставлено на ринок!" << endl;
+                            }
+                        }
+                        else{
+                            cout << "Ви не можете продати об'єкт, що вам не належить!" << endl;
+                        }
+                        break;
+                    }
+                }
+                if(!found){
+                    cout << "Об'єкт з такою назвою не знайдено!" << endl;
+                }
                 break;
             }
             case 0:
