@@ -190,6 +190,7 @@ int main(){
         cout << "6. Здати в оренду/Повернути" << endl;
         cout << "7. Придбати об'єкт" << endl;
         cout << "8. Розрахувати прибуток" << endl;
+        cout << "9. Продати об'єкт" << endl;
         cout << "0. Вихід" << endl;
         cout << "Ваш вибір: ";
         
@@ -341,7 +342,7 @@ int main(){
                 for(Property* p : objects){
                     if(p->getName() == name){
                         found = true;
-                        if(p->get_boughtness()){ // Перевірка: чи він твій
+                        if(p->get_boughtness()){
                             cout << "Об'єкт '" << name << "' зараз у вашій власності." << endl;
                             cout << "Підтвердити продаж? (y/n): ";
                             string answer;
