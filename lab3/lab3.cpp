@@ -1,10 +1,119 @@
 #include <iostream>
-#include <vector>
 #include <string>
 #include <limits>
 #include <iomanip>
 
 using namespace std;
+
+template <typename T>
+class DoublyLinkedList{
+private:
+    struct Node{
+        T data;
+        Node* next;
+        Node* prev;
+        Node(T val) : data(val), next(nullptr), prev(nullptr) {}
+    };
+
+    Node* head;
+    Node* tail;
+    int count;
+
+public:
+    DoublyLinkedList() : head(nullptr), tail(nullptr), count(0) {}
+
+    ~DoublyLinkedList(){
+        clear();
+    }
+
+    void push_back(T val){
+        Node* newNode = new Node(val);
+        if(!head){
+            head = tail = newNode;
+        }
+        else{
+            tail->next = newNode;
+            newNode->prev = tail;
+            tail = newNode;
+        }
+        count++;
+    }
+
+    void clear(){
+        Node* current = head;
+        while(current){
+            Node* next = current->next;
+            delete current;
+            current = next;
+        }
+        head = tail = nullptr;
+        count = 0;
+    }
+
+    int size() const { return count; }
+    bool empty() const { return count == 0; }
+
+    class Iterator{
+    private:
+        Node* current;
+    public:
+        Iterator(Node* node) : current(node) {}
+
+        T& operator*(){ 
+            return current->data; 
+        }
+
+        Iterator& operator++(){
+            if(current){
+                current = current->next;
+            }
+            return *this;
+        }
+
+        Iterator& operator--() {
+            if(current){
+                current = current->prev;
+            }
+            return *this;
+        }
+
+        bool operator!=(const Iterator& other) const { return current != other.current; }
+        bool operator==(const Iterator& other) const { return current == other.current; }
+        
+        Node* getNode() const { return current; }
+    };
+
+    Iterator begin() { return Iterator(head); }
+    Iterator end() { return Iterator(nullptr); }
+
+    Iterator erase(Iterator it) {
+        Node* nodeToDelete = it.getNode();
+        if(!nodeToDelete){
+            return end();
+        }
+
+        Node* nextNode = nodeToDelete->next;
+
+        if(nodeToDelete->prev){
+            nodeToDelete->prev->next = nodeToDelete->next;
+        }
+        else{
+            head = nodeToDelete->next;
+        }
+
+        if(nodeToDelete->next){
+            nodeToDelete->next->prev = nodeToDelete->prev;
+        }
+        else{
+            tail = nodeToDelete->prev;
+        }
+
+        delete nodeToDelete;
+        count--;
+
+        return Iterator(nextNode);
+    }
+};
 
 class Property{
     public:
@@ -33,7 +142,9 @@ class Property{
                 passport.registrationDate = regDate;
             }
         
-        virtual ~Property() {}
+        virtual ~Property() {
+            totalObjects--;
+        }
 
         virtual void show() = 0;
 
@@ -134,7 +245,7 @@ int trueint(){
     return a;
 }
 
-void addObject(vector<Property*>& objects) {
+void addObject(DoublyLinkedList<Property*>& objects) {
     cout << "Який тип об'єкта додати?" << endl;
     cout << "1. Апартаменти" << endl;
     cout << "2. Комерційна нерухомість" << endl;
@@ -206,14 +317,176 @@ class {
         }
 } systemprinter;
 
-int main(){
-    systemprinter.print_message();
+void displayAllProperties(DoublyLinkedList<Property*>& objects){
+    if(objects.empty()){
+        cout << "Поки що немає об'єктів!" << endl;
+        return;
+    }
+    cout << "Список об'єктів нерухомості" << endl;
+    for(Property* p : objects){
+        p->show();
+    }
+}
 
-    vector<Property*> objects;
+void filterByMaxPrice(DoublyLinkedList<Property*>& objects){
+    cout << "Введіть максимальний бюджет: ";
+    double budget;
+    cin >> budget;
+    cout << "Доступні варіанти до " << budget << " грн:" << endl;
+    bool found = false;
+    for(Property* p : objects){
+        if(p->get_price() <= budget){
+            p->show();
+            found = true;
+        }
+    }
+    if(!found){
+        cout << "Нічого не знайдено за таку ціну." << endl;
+    }
+}
 
+void updatePropertyPrice(DoublyLinkedList<Property*>& objects){
+    cout << "Введіть ID об'єкта для зміни ціни: ";
+    int searchid = trueint();
+    for(Property* p : objects){
+        if(p->getid() == searchid){
+            cout << "Об'єкт: " << p->getName() << ". Введіть нову ціну: ";
+            double newPrice;
+            cin >> newPrice;
+            p->set_new_price(newPrice);
+            cout << "Ціну успішно оновлено!" << endl;
+            return;
+        }
+    }
+    cout << "Об'єкт з ID " << searchid << " не знайдено." << endl;
+}
+
+void deletePropertyByName(DoublyLinkedList<Property*>& objects) {
+    cout << "Введіть назву для видалення: ";
+    string name;
+    getline(cin >> ws, name);
+
+    bool found = false;
+    auto it = objects.begin();
+    while(it != objects.end()){
+        if((*it)->getName() == name){
+            found = true;
+            delete *it;
+            it = objects.erase(it);
+            cout << "Видалено!" << endl;
+        }
+        else{
+            ++it;
+        }
+    }
+    if(!found){
+        cout << "Об'єкт не знайдено." << endl;
+    }
+}
+
+void repairProperty(DoublyLinkedList<Property*>& objects){
+    cout << "Введіть назву об'єкта для ремонту: ";
+    string name;
+    getline(cin >> ws, name);
+    for(Property* p : objects){
+        if(p->getName() == name){
+            IRepairable* r = dynamic_cast<IRepairable*>(p);
+            if(r){
+                r->repair();
+            }
+            else{
+                cout << "Об'єкт '" << name << "' не підлягає ремонту!" << endl;
+            }
+            return;
+        }
+    }
+    cout << "Об'єкт не знайдено!" << endl;
+}
+
+void toggleRentStatus(DoublyLinkedList<Property*>& objects){
+    cout << "Введіть назву об'єкта: ";
+    string name;
+    getline(cin >> ws, name);
+    for(Property* p : objects){
+        if(p->getName() == name){
+            p->setStatus(!p->get_status());
+            cout << "Статус об'єкта '" << name << "' змінено!" << endl;
+            return;
+        }
+    }
+    cout << "Об'єкт не знайдено!" << endl;
+}
+
+void purchaseProperty(DoublyLinkedList<Property*>& objects){
+    cout << "Введіть назву об'єкта для придбання: ";
+    string name;
+    getline(cin >> ws, name);
+    for(Property* p : objects){
+        if(p->getName() == name){
+            cout << "Вартість: " << p->get_price() << " грн. Підтвердити? (y/n): ";
+            char answer;
+            cin >> answer;
+            if(answer == 'y' || answer == 'Y'){
+                p->setboughtness(true);
+                cout << "Вітаю з придбанням!" << endl;
+            }
+            return;
+        }
+    }
+    cout << "Нерухомість не знайдено!" << endl;
+}
+
+void sellProperty(DoublyLinkedList<Property*>& objects){
+    cout << "Введіть назву об'єкта для продажу: ";
+    string name;
+    getline(cin >> ws, name);
+    for(Property* p : objects){
+        if(p->getName() == name){
+            if(p->get_boughtness()){
+                p->setboughtness(false);
+                p->setStatus(false);
+                cout << "Об'єкт продано та виставлено на ринок!" << endl;
+            }
+            else{
+                cout << "Ви не можете продати те, що вам не належить!" << endl;
+            }
+            return;
+        }
+    }
+    cout << "Об'єкт не знайдено!" << endl;
+}
+
+void calculateTotalIncome(DoublyLinkedList<Property*>& objects){
+    double totalRent = 0;
+    cout << "Розрахунок пасивного доходу" << endl;
+    for(Property* p : objects){
+        if(p->get_boughtness() && p->get_status()){
+            cout << "+ " << p->getName() << ": " << p->get_rent() << " грн." << endl;
+            totalRent += p->get_rent();
+        }
+    }
+    cout << "Загальний прибуток за місяць: " << totalRent << " грн." << endl;
+}
+
+void initializeSystem(DoublyLinkedList<Property*>& objects){
     objects.push_back(new Apartment("Екстравагант", "вул. Князя Романа, 5", 68.4, 25000, 1, 12000, "26.02.2026", 4, 2));
     objects.push_back(new Commercial("Незнайки", "вул. Наукова, 46", 674, 200000, 2, 67000, 2024, "26.02.2026", "SoftServe", 10));
     objects.push_back(new ownHouse("Прескураж", "вул. Стрийська, 144", 134, 80000, 3, 0, 2022, "27.02.2026", 344.5, 2));
+}
+
+void cleanupSystem(DoublyLinkedList<Property*>& objects){
+    for(Property* p : objects){
+        delete p;
+    }
+    objects.clear();
+}
+
+int main(){
+    systemprinter.print_message();
+
+    DoublyLinkedList<Property*> objects;
+
+    initializeSystem(objects);
 
     int choice = -1;
     while(choice != 0){
@@ -235,197 +508,40 @@ int main(){
         choice = trueint();
         switch(choice){
             case 1:
-                if(objects.empty()){
-                    cout << "Поки що немає об'єктів!" << endl;
-                }
-                else{
-                    cout << "Об'єкти: " << endl;
-                    for(Property* p : objects){
-                        p->show();
-                    }
-                }
+                displayAllProperties(objects);
                 break;
-            case 2:{
-                cout << "Введіть ID об'єкта для зміни ціни: ";
-                int searchid = trueint();
-                bool found = false;
-                for(Property* p : objects){
-                    if(p->getid()==searchid){
-                        cout << "Об'єкт: " << p->getName() << ". Введіть нову ціну: ";
-                        double newPrice;
-                        cin >> newPrice;
-                        p->set_new_price(newPrice);
-                        cout << "Ціну успішно оновлено!" << endl;
-                        found = true;
-                        break;   
-                    }
-                }
-
-                if(!found){
-                    cout << "Об'єкт з ID " << searchid << " не знайдено." << endl;    
-                }
+            case 2:
+                updatePropertyPrice(objects);
                 break;
-            }
-            case 3:{
-                cout << "Введіть назву об'єкта для видалення: ";
-                string name;
-                getline(cin >> ws, name);
-                bool found = false;
-                for(auto it = objects.begin(); it!=objects.end(); ++it){
-                    if((*it)->getName() == name){
-                        delete *it;
-                        objects.erase(it);
-                        cout << "Об'єкт успішно видалено!" << endl;
-                        found = true;
-                        break;
-                    }
-                }
-
-                if(!found){
-                    cout << "Об'єкта з назвою " << name <<  " не знайдено!" << endl;
-                }
+            case 3:
+                deletePropertyByName(objects);
                 break;
-            }
-            case 4:{
-                cout << "Введіть назву об'єкта для ремонту: ";
-                string name;
-                getline(cin >> ws, name);
-                bool found = false;
-
-                for (Property* p : objects) {
-                    if (p->getName() == name) {
-                        found = true;
-                        IRepairable* r = dynamic_cast<IRepairable*>(p);
-
-                        if(r){
-                            r->repair();
-                        }
-                        else{
-                            cout << "Об'єкт " << name << " не підлягає ремонту!" << endl;
-                        }
-                        break;
-                    }
-                }
-                if(!found){
-                    cout << "Об'єкта з назвою " << name << " не знайдено!" << endl;
-                }
+            case 4:
+                repairProperty(objects);
                 break;
-            }
-            case 5:{
+            case 5:
                 addObject(objects);
                 break;
-            }
-            case 6:{
-                cout << "Введіть назву об'єкта: ";
-                string name;
-                getline(cin>>ws, name);
-                bool found = false;
-                for(Property* p : objects){
-                    if(p->getName() == name){
-                        p->setStatus(!p->get_status());
-                        cout << "Статус об'єкта " << name << " змінено!" << endl;;
-                        found = true;
-                        break;
-                    }
-                }
-                if(!found){
-                    cout << "Об'єкт не знайдено!" << endl;   
-                }
+            case 6:
+                toggleRentStatus(objects);
                 break;
-            }
-            case 7:{
-                cout << "Введіть назву об'єкта який бажаєте придбати: ";
-                string name;
-                getline(cin>>ws, name);
-                bool found = false;
-                for(Property* p : objects){
-                    if(p->getName() == name){
-                        cout << "Вартість: " << p->get_price() << " грн." << endl;
-                        cout << "Підтвердити покупку?(y/n)" << endl;
-                        string answer;
-                        do{
-                            cin >> answer;
-                        }while(answer!="y" && answer!="n");
-                        if(answer == "y"){
-                            p->setboughtness(true);
-                            cout << "Вітаю з придбанням!" << endl;
-                        }
-                        found = true;
-                        break;
-                    }
-                }
-                if(!found){
-                    cout << "Такої нерухомості не знайдено!" << endl;
-                }
+            case 7:
+                purchaseProperty(objects);
                 break;
-            }
-            case 8:{
-                double totalRent = 0;
-                cout << "Пасивний дохід:" << endl;
-                for(Property* p : objects){
-                    if(p->get_boughtness() && p->get_status()){
-                        cout << "+ " << p->getName() << ": " << p->get_rent() << " грн." << endl;
-                        totalRent += p->get_rent();
-                    }
-                }
-                cout << "Разом за місяць: " << totalRent << " грн." << endl;
+            case 8:
+                calculateTotalIncome(objects);
                 break;
-            }
-            case 9:{
-                cout << "Введіть назву об'єкта для продажу: ";
-                string name;
-                getline(cin >> ws, name);
-                bool found = false;
-
-                for(Property* p : objects){
-                    if(p->getName() == name){
-                        found = true;
-                        if(p->get_boughtness()){
-                            cout << "Об'єкт '" << name << "' зараз у вашій власності." << endl;
-                            cout << "Підтвердити продаж? (y/n): ";
-                            string answer;
-                            do{
-                                cin >> answer;
-                            }while (answer != "y" && answer != "n");
-
-                            if(answer == "y"){
-                                p->setboughtness(false);
-                                p->setStatus(false);
-                                cout << "Об'єкт успішно продано і виставлено на ринок!" << endl;
-                            }
-                        }
-                        else{
-                            cout << "Ви не можете продати об'єкт, що вам не належить!" << endl;
-                        }
-                        break;
-                    }
-                }
-                if(!found){
-                    cout << "Об'єкт з такою назвою не знайдено!" << endl;
-                }
+            case 9:
+                sellProperty(objects);
                 break;
-            }
-            case 10:{
+            case 10:
                 cout << "Загальна кількість об'єктів у системі: " << Property::totalObjects << endl;
                 break;
-            }
-            case 11:{
-                cout << "Введіть максимальний бюджет: ";
-                double budget;
-                cin >> budget;
-                cout << "Доступні варіанти до " << budget << " грн:" << endl;
-                for(Property* p : objects){
-                    if(p->get_price() <= budget){
-                        p->show();
-                    }
-                }
+            case 11:
+                filterByMaxPrice(objects);
                 break;
-            }
             case 0:
-                for(Property* p : objects){
-                    delete p;
-                }
-                objects.clear();
+                cleanupSystem(objects);
                 cout << "До зустрічі!";
                 return 0;
             default:
