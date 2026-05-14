@@ -1,0 +1,54 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "cppbuild",
+            "label": "Build: lab4 (main)",
+            "command": "g++.exe",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-g",
+                "${workspaceFolder}/lab4.cpp",
+                "${workspaceFolder}/sqlite3.o",
+                "-o",
+                "${workspaceFolder}/lab4.exe",
+                "-I", "${workspaceFolder}",
+                "-I", "${workspaceFolder}/Hypodermic",
+                "-pthread",
+                "-std=c++17"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": ["$gcc"],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "Збірка основного виконуваного файлу"
+        },
+        {
+            "type": "cppbuild",
+            "label": "Build: tests",
+            "command": "g++.exe",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-g",
+                "${workspaceFolder}/tests.cpp",
+                "${workspaceFolder}/sqlite3.o",
+                "-o",
+                "${workspaceFolder}/tests.exe",
+                "-I", "${workspaceFolder}",
+                "-I", "${workspaceFolder}/Hypodermic",
+                "-pthread",
+                "-std=c++17"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": ["$gcc"],
+            "group": "build",
+            "detail": "Збірка тестів (Catch2)"
+        }
+    ]
+}

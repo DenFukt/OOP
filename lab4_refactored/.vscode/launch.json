@@ -1,0 +1,47 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "▶ Запустити lab4",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/lab4.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "gdb.exe",
+            "preLaunchTask": "Build: lab4 (main)",
+            "setupCommands": [
+                {
+                    "description": "Увімкнути pretty-print для gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
+            "name": "🧪 Запустити tests",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/tests.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "gdb.exe",
+            "preLaunchTask": "Build: tests",
+            "setupCommands": [
+                {
+                    "description": "Увімкнути pretty-print для gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        }
+    ]
+}
