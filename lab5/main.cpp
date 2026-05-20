@@ -49,7 +49,8 @@ using namespace std;
     })
 
 int main(int argc, char** argv) {
-    int port = (argc > 1) ? stoi(argv[1]) : 8080;
+    const char* envPort = getenv("PORT");
+    int port = envPort ? stoi(envPort) : (argc > 1 ? stoi(argv[1]) : 8080);
 
     // ── DI: ручне з'єднання залежностей (Constructor Injection) ─────────────
     auto repo     = make_shared<SQLiteRepository>("estate.db");

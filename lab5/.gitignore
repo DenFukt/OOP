@@ -1,0 +1,19 @@
+# Змінні середовища — НІКОЛИ не пушити на GitHub!
+.env
+
+# База даних і логи — локальні файли
+estate.db
+events.log
+
+# Скомпільовані файли
+lab5.exe
+lab5
+tests.exe
+tests
+sqlite3.o
+
+# Завантажені хедери
+httplib.h
+
+# VS Code
+.vscode/
