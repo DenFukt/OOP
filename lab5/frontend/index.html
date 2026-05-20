@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏠 Estate Manager</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#0f172a;--surface:#1e293b;--card:#273549;--border:#334155;
+        --accent:#3b82f6;--accent2:#10b981;--warn:#f59e0b;--danger:#ef4444;
+        --text:#e2e8f0;--muted:#94a3b8}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;min-height:100vh}
+  header{background:var(--surface);border-bottom:1px solid var(--border);
+         padding:1rem 2rem;display:flex;align-items:center;gap:1rem}
+  header h1{font-size:1.3rem;font-weight:600}
+  .badge{background:var(--accent);color:#fff;font-size:.7rem;padding:2px 8px;border-radius:99px}
+  .health-dot{width:10px;height:10px;border-radius:50%;background:var(--muted);
+              display:inline-block;margin-right:6px}
+  .health-dot.ok{background:var(--accent2)}
+  .health-dot.degraded{background:var(--danger)}
+
+  nav{display:flex;gap:2px;padding:1rem 2rem .5rem;border-bottom:1px solid var(--border)}
+  .tab{padding:.5rem 1.2rem;border-radius:6px 6px 0 0;cursor:pointer;
+       font-size:.9rem;color:var(--muted);border:none;background:transparent}
+  .tab.active{background:var(--surface);color:var(--text);font-weight:500}
+
+  main{padding:1.5rem 2rem}
+  .page{display:none}.page.active{display:block}
+
+  /* Stats */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem}
+  .stat{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1rem}
+  .stat-val{font-size:1.8rem;font-weight:700}
+  .stat-lbl{font-size:.78rem;color:var(--muted);margin-top:4px}
+  .accent{color:var(--accent)}.green{color:var(--accent2)}.warn{color:var(--warn)}
+
+  /* Table */
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  table{width:100%;border-collapse:collapse;font-size:.87rem}
+  th{background:var(--card);padding:.7rem 1rem;text-align:left;color:var(--muted);
+     font-weight:500;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em}
+  td{padding:.65rem 1rem;border-top:1px solid var(--border)}
+  tr:hover td{background:rgba(59,130,246,.05)}
+  .type-badge{display:inline-block;padding:2px 8px;border-radius:99px;font-size:.75rem;font-weight:500}
+  .Apartment{background:#1e3a5f;color:#93c5fd}
+  .Commercial{background:#2d1f3d;color:#c4b5fd}
+  .OwnHouse{background:#1a3a2a;color:#6ee7b7}
+  .chip{display:inline-block;padding:2px 7px;border-radius:99px;font-size:.73rem}
+  .chip.yes{background:#1a3a2a;color:#6ee7b7}
+  .chip.no {background:#2a1f1f;color:#fca5a5}
+
+  /* Buttons */
+  .btn{border:none;border-radius:6px;padding:.4rem .85rem;cursor:pointer;
+       font-size:.82rem;font-weight:500;transition:.15s}
+  .btn-sm{padding:.25rem .6rem;font-size:.75rem}
+  .btn-primary{background:var(--accent);color:#fff}
+  .btn-primary:hover{background:#2563eb}
+  .btn-danger{background:var(--danger);color:#fff}
+  .btn-danger:hover{background:#dc2626}
+  .btn-warn{background:var(--warn);color:#000}
+  .btn-warn:hover{background:#d97706}
+  .btn-green{background:var(--accent2);color:#fff}
+  .btn-green:hover{background:#059669}
+  .btn-ghost{background:var(--card);color:var(--text);border:1px solid var(--border)}
+  .btn-ghost:hover{background:var(--border)}
+  .actions{display:flex;gap:5px;flex-wrap:wrap}
+
+  /* Form */
+  .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.8rem}
+  .field{display:flex;flex-direction:column;gap:.35rem}
+  label{font-size:.78rem;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.04em}
+  input,select{background:var(--card);border:1px solid var(--border);border-radius:6px;
+               padding:.5rem .75rem;color:var(--text);font-size:.9rem;width:100%}
+  input:focus,select:focus{outline:none;border-color:var(--accent)}
+  .form-actions{margin-top:1rem;display:flex;gap:.75rem;align-items:center}
+
+  /* Log table */
+  .log-table td:first-child{color:var(--muted);font-size:.78rem;font-family:monospace}
+  .action-chip{padding:2px 8px;border-radius:99px;font-size:.73rem;font-weight:500}
+  .PROPERTY_ADDED{background:#1e3a5f;color:#93c5fd}
+  .PROPERTY_DELETED{background:#3a1a1a;color:#fca5a5}
+  .RENTED{background:#1a2a3a;color:#7dd3fc}
+  .RENT_CANCELLED{background:#2a2a1a;color:#fde68a}
+  .PROPERTY_BOUGHT{background:#1a3a2a;color:#6ee7b7}
+  .PROPERTY_SOLD{background:#2d1f3d;color:#c4b5fd}
+  .PRICE_UPDATED{background:#1a1a2a;color:#a5b4fc}
+  .REPAIR_STARTED{background:#2a1a1a;color:#fdba74}
+
+  /* Insights */
+  .insights-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem}
+  .endpoint-row{display:flex;align-items:center;gap:.75rem;padding:.5rem 0;
+                border-bottom:1px solid var(--border);font-size:.85rem}
+  .ep-name{font-family:monospace;color:var(--accent);flex:1}
+  .ep-hits{color:var(--text);min-width:40px;text-align:right}
+  .ep-avg{color:var(--muted);font-size:.78rem;min-width:60px;text-align:right}
+
+  /* Toast */
+  #toast{position:fixed;bottom:1.5rem;right:1.5rem;padding:.65rem 1.1rem;
+         border-radius:8px;font-size:.87rem;opacity:0;transition:.3s;
+         pointer-events:none;max-width:320px;z-index:999}
+  #toast.show{opacity:1}
+  #toast.success{background:var(--accent2);color:#fff}
+  #toast.error{background:var(--danger);color:#fff}
+
+  .empty{text-align:center;padding:2.5rem;color:var(--muted)}
+  .divider{border:none;border-top:1px solid var(--border);margin:1.2rem 0}
+  .section-title{font-size:.85rem;font-weight:600;color:var(--muted);
+                 text-transform:uppercase;letter-spacing:.05em;margin-bottom:.75rem}
+</style>
+</head>
+<body>
+
+<header>
+  <span style="font-size:1.5rem">🏠</span>
+  <h1>Estate Manager</h1>
+  <span class="badge" id="propCount">—</span>
+  <div style="margin-left:auto;display:flex;align-items:center;font-size:.85rem;color:var(--muted)">
+    <span class="health-dot" id="healthDot"></span>
+    <span id="healthLabel">Перевірка...</span>
+  </div>
+</header>
+
+<nav>
+  <button class="tab active" onclick="showTab('properties')">🏢 Нерухомість</button>
+  <button class="tab"        onclick="showTab('add')">➕ Додати</button>
+  <button class="tab"        onclick="showTab('transactions')">📋 Транзакції</button>
+  <button class="tab"        onclick="showTab('insights')">📊 Інсайти</button>
+  <button class="tab"        onclick="showTab('health')">❤️ Health</button>
+</nav>
+
+<main>
+
+<!-- ══ PROPERTIES ══════════════════════════════════════════════════════════ -->
+<div class="page active" id="page-properties">
+  <div class="stats">
+    <div class="stat"><div class="stat-val accent" id="s-total">—</div><div class="stat-lbl">Всього об'єктів</div></div>
+    <div class="stat"><div class="stat-val green"  id="s-rented">—</div><div class="stat-lbl">Здано в оренду</div></div>
+    <div class="stat"><div class="stat-val warn"   id="s-bought">—</div><div class="stat-lbl">Куплено</div></div>
+    <div class="stat"><div class="stat-val green"  id="s-income">—</div><div class="stat-lbl">Дохід від оренди</div></div>
+  </div>
+
+  <div class="card">
+    <table>
+      <thead><tr>
+        <th>Тип</th><th>Назва</th><th>Адреса</th><th>Площа</th>
+        <th>Ціна</th><th>Оренда</th><th>Куплено</th><th>Дії</th>
+      </tr></thead>
+      <tbody id="propsBody"><tr><td colspan="8" class="empty">Завантаження...</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══ ADD ═════════════════════════════════════════════════════════════════ -->
+<div class="page" id="page-add">
+  <div class="card" style="padding:1.5rem">
+    <div class="section-title">Новий об'єкт нерухомості</div>
+
+    <div class="form-grid">
+      <div class="field">
+        <label>Тип *</label>
+        <select id="f-type" onchange="updateTypeFields()">
+          <option value="Apartment">🏢 Квартира</option>
+          <option value="Commercial">🏪 Комерція</option>
+          <option value="OwnHouse">🏡 Будинок</option>
+        </select>
+      </div>
+      <div class="field"><label>Назва *</label><input id="f-name" placeholder="напр. Квартира Центр"></div>
+      <div class="field"><label>Адреса *</label><input id="f-address" placeholder="вул. Шевченка 1"></div>
+      <div class="field"><label>Площа (м²)</label><input id="f-area" type="number" placeholder="50"></div>
+      <div class="field"><label>Ціна (грн)</label><input id="f-price" type="number" placeholder="1500000"></div>
+      <div class="field"><label>Ціна оренди (грн/міс)</label><input id="f-rentPrice" type="number" placeholder="12000"></div>
+    </div>
+
+    <!-- Apartment fields -->
+    <div id="fields-apartment" style="margin-top:.8rem">
+      <hr class="divider">
+      <div class="form-grid">
+        <div class="field"><label>Поверх</label><input id="f-floor" type="number" placeholder="3"></div>
+        <div class="field"><label>Кімнат</label><input id="f-rooms" type="number" placeholder="2"></div>
+        <div class="field"><label>Дата реєстрації</label><input id="f-date" placeholder="01.01.2025"></div>
+      </div>
+    </div>
+
+    <!-- Commercial fields -->
+    <div id="fields-commercial" style="display:none;margin-top:.8rem">
+      <hr class="divider">
+      <div class="form-grid">
+        <div class="field"><label>Тип бізнесу</label><input id="f-businessType" placeholder="IT, Магазин, Ресторан"></div>
+      </div>
+    </div>
+
+    <!-- OwnHouse fields -->
+    <div id="fields-house" style="display:none;margin-top:.8rem">
+      <hr class="divider">
+      <div class="form-grid">
+        <div class="field"><label>Площа ділянки (сот.)</label><input id="f-landArea" type="number" placeholder="10"></div>
+        <div class="field"><label>Гараж</label>
+          <select id="f-hasGarage"><option value="false">Немає</option><option value="true">Є</option></select>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="submitAdd()">➕ Додати об'єкт</button>
+      <button class="btn btn-ghost"   onclick="clearForm()">Очистити</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TRANSACTIONS ════════════════════════════════════════════════════════ -->
+<div class="page" id="page-transactions">
+  <div class="card">
+    <table class="log-table">
+      <thead><tr><th>Час</th><th>Подія</th><th>Об'єкт</th></tr></thead>
+      <tbody id="txBody"><tr><td colspan="3" class="empty">Завантаження...</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══ INSIGHTS ════════════════════════════════════════════════════════════ -->
+<div class="page" id="page-insights">
+  <div class="stats">
+    <div class="stat"><div class="stat-val accent" id="i-total">—</div><div class="stat-lbl">Всього запитів</div></div>
+    <div class="stat"><div class="stat-val green"  id="i-uptime">—</div><div class="stat-lbl">Uptime (сек)</div></div>
+  </div>
+  <div class="card" style="padding:1.25rem">
+    <div class="section-title">Статистика по ендпоінтах</div>
+    <div id="endpoints-list"></div>
+  </div>
+</div>
+
+<!-- ══ HEALTH ══════════════════════════════════════════════════════════════ -->
+<div class="page" id="page-health">
+  <div class="stats" id="health-cards"></div>
+  <div class="card" style="padding:1.25rem;margin-top:1rem">
+    <div class="section-title">Raw JSON</div>
+    <pre id="health-raw" style="font-family:monospace;font-size:.82rem;color:var(--muted);
+         white-space:pre-wrap;word-break:break-all"></pre>
+  </div>
+</div>
+
+</main>
+
+<div id="toast"></div>
+
+<script>
+const API = '';
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function toast(msg, type='success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = `show ${type}`;
+  setTimeout(() => el.className = '', 2800);
+}
+
+// ── Tabs ──────────────────────────────────────────────────────────────────────
+function showTab(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab') .forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  event.target.classList.add('active');
+  if (name === 'properties')   loadProperties();
+  if (name === 'transactions') loadTransactions();
+  if (name === 'insights')     loadInsights();
+  if (name === 'health')       loadHealth();
+}
+
+// ── Load properties ───────────────────────────────────────────────────────────
+async function loadProperties() {
+  const [props, incomeRes] = await Promise.all([
+    fetch('/api/properties').then(r => r.json()),
+    fetch('/api/income').then(r => r.json())
+  ]);
+  const rented = props.filter(p => p.isRented).length;
+  const bought  = props.filter(p => p.isBought).length;
+
+  document.getElementById('s-total') .textContent = props.length;
+  document.getElementById('s-rented').textContent = rented;
+  document.getElementById('s-bought').textContent = bought;
+  document.getElementById('s-income').textContent = '₴' + Math.round(incomeRes.income).toLocaleString();
+  document.getElementById('propCount').textContent = props.length + ' об\'єктів';
+
+  const tbody = document.getElementById('propsBody');
+  if (!props.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty">Немає об\'єктів</td></tr>'; return; }
+
+  tbody.innerHTML = props.map(p => `
+    <tr>
+      <td><span class="type-badge ${p.type}">${typeName(p.type)}</span></td>
+      <td><strong>${p.name}</strong></td>
+      <td style="color:var(--muted)">${p.address}</td>
+      <td>${p.area} м²</td>
+      <td>₴${Math.round(p.price).toLocaleString()}</td>
+      <td><span class="chip ${p.isRented?'yes':'no'}">${p.isRented?'Орендовано':'Вільно'}</span></td>
+      <td><span class="chip ${p.isBought?'yes':'no'}">${p.isBought?'Куплено':'Продаж'}</span></td>
+      <td>
+        <div class="actions">
+          <button class="btn btn-sm btn-warn"  onclick="toggleRent('${p.name}')">${p.isRented?'↩ Оренда':'🔑 Здати'}</button>
+          ${!p.isBought
+            ? `<button class="btn btn-sm btn-green" onclick="buy('${p.name}')">💰 Купити</button>`
+            : `<button class="btn btn-sm btn-ghost"  onclick="sell('${p.name}')">↩ Продати</button>`}
+          <button class="btn btn-sm btn-ghost"   onclick="promptPrice('${p.name}')">✏️ Ціна</button>
+          <button class="btn btn-sm btn-danger"  onclick="del('${p.name}')">🗑</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function typeName(t) {
+  return {Apartment:'Квартира', Commercial:'Комерція', OwnHouse:'Будинок'}[t] || t;
+}
+
+// ── Actions ───────────────────────────────────────────────────────────────────
+async function api(url, method='GET', body=null) {
+  const opts = { method, headers: {'Content-Type':'application/json'} };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(url, opts);
+  return r.json();
+}
+
+async function toggleRent(name) {
+  await api(`/api/properties/${encodeURIComponent(name)}/rent`, 'PUT');
+  toast(`Статус оренди змінено: ${name}`); loadProperties();
+}
+async function buy(name) {
+  await api(`/api/properties/${encodeURIComponent(name)}/buy`, 'PUT');
+  toast(`Придбано: ${name}`); loadProperties();
+}
+async function sell(name) {
+  await api(`/api/properties/${encodeURIComponent(name)}/sell`, 'PUT');
+  toast(`Виставлено на продаж: ${name}`); loadProperties();
+}
+async function del(name) {
+  if (!confirm(`Видалити "${name}"?`)) return;
+  await api(`/api/properties/${encodeURIComponent(name)}`, 'DELETE');
+  toast(`Видалено: ${name}`); loadProperties();
+}
+async function promptPrice(name) {
+  const val = prompt(`Нова ціна для "${name}":`);
+  if (!val || isNaN(+val)) return;
+  await api(`/api/properties/${encodeURIComponent(name)}/price`, 'PUT', {price: +val});
+  toast(`Ціну оновлено`); loadProperties();
+}
+
+// ── Add form ──────────────────────────────────────────────────────────────────
+function updateTypeFields() {
+  const t = document.getElementById('f-type').value;
+  document.getElementById('fields-apartment').style.display = t==='Apartment'?'block':'none';
+  document.getElementById('fields-commercial').style.display= t==='Commercial'?'block':'none';
+  document.getElementById('fields-house').style.display     = t==='OwnHouse'?'block':'none';
+}
+
+async function submitAdd() {
+  const t = document.getElementById('f-type').value;
+  const body = {
+    type:      t,
+    name:      document.getElementById('f-name').value.trim(),
+    address:   document.getElementById('f-address').value.trim(),
+    area:      +document.getElementById('f-area').value,
+    price:     +document.getElementById('f-price').value,
+    rentPrice: +document.getElementById('f-rentPrice').value,
+  };
+  if (!body.name || !body.address) { toast('Заповни назву і адресу','error'); return; }
+
+  if (t === 'Apartment') {
+    body.floor = +document.getElementById('f-floor').value;
+    body.rooms = +document.getElementById('f-rooms').value;
+    body.date  =  document.getElementById('f-date').value;
+  } else if (t === 'Commercial') {
+    body.businessType = document.getElementById('f-businessType').value;
+  } else {
+    body.landArea  = +document.getElementById('f-landArea').value;
+    body.hasGarage = document.getElementById('f-hasGarage').value === 'true';
+  }
+
+  const res = await api('/api/properties', 'POST', body);
+  if (res.ok) { toast(`Додано: ${body.name}`); clearForm(); }
+  else toast(res.error || 'Помилка','error');
+}
+
+function clearForm() {
+  ['f-name','f-address','f-area','f-price','f-rentPrice',
+   'f-floor','f-rooms','f-date','f-businessType','f-landArea']
+    .forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+}
+
+// ── Transactions ──────────────────────────────────────────────────────────────
+async function loadTransactions() {
+  const data = await fetch('/api/transactions').then(r => r.json());
+  const tbody = document.getElementById('txBody');
+  if (!data.length) { tbody.innerHTML = '<tr><td colspan="3" class="empty">Немає транзакцій</td></tr>'; return; }
+  tbody.innerHTML = data.map(t => `
+    <tr>
+      <td>${t.timestamp}</td>
+      <td><span class="action-chip ${t.action}">${t.action}</span></td>
+      <td>${t.property}</td>
+    </tr>`).join('');
+}
+
+// ── Insights ──────────────────────────────────────────────────────────────────
+async function loadInsights() {
+  const d = await fetch('/api/insights').then(r => r.json());
+  document.getElementById('i-total') .textContent = d.totalRequests;
+  document.getElementById('i-uptime').textContent = d.uptimeSeconds + ' с';
+
+  const list = document.getElementById('endpoints-list');
+  if (!d.endpoints?.length) { list.innerHTML = '<div class="empty">Немає даних</div>'; return; }
+  const sorted = [...d.endpoints].sort((a,b) => b.hits - a.hits);
+  list.innerHTML = sorted.map(e => `
+    <div class="endpoint-row">
+      <span class="ep-name">${e.route}</span>
+      <span class="ep-hits">${e.hits} запитів</span>
+      <span class="ep-avg">${e.avgMs.toFixed(1)} мс</span>
+    </div>`).join('');
+}
+
+// ── Health ────────────────────────────────────────────────────────────────────
+async function loadHealth() {
+  const d = await fetch('/api/health').then(r => r.json());
+  const dot = document.getElementById('healthDot');
+  const lbl = document.getElementById('healthLabel');
+  dot.className = 'health-dot ' + d.status;
+  lbl.textContent = d.status === 'ok' ? 'Сервіс OK' : 'Помилка';
+
+  document.getElementById('health-cards').innerHTML = `
+    <div class="stat"><div class="stat-val ${d.status==='ok'?'green':'accent'}">${d.status.toUpperCase()}</div><div class="stat-lbl">Статус</div></div>
+    <div class="stat"><div class="stat-val accent">${d.version}</div><div class="stat-lbl">Версія</div></div>
+    <div class="stat"><div class="stat-val green">${d.uptime} с</div><div class="stat-lbl">Uptime</div></div>
+    <div class="stat"><div class="stat-val ${d.db==='connected'?'green':'accent'}">${d.db}</div><div class="stat-lbl">База даних</div></div>
+    <div class="stat"><div class="stat-val accent">${d.properties}</div><div class="stat-lbl">Записів у БД</div></div>
+  `;
+  document.getElementById('health-raw').textContent = JSON.stringify(d, null, 2);
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+loadProperties();
+loadHealth();
+setInterval(loadHealth, 30000);
+</script>
+</body>
+</html>

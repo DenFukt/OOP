@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  estate-app:
+    build: .
+    container_name: estate-manager
+    ports:
+      - "8080:8080"
+    volumes:
+      # Зберігаємо БД та логи поза контейнером (дані виживають після рестарту)
+      - estate-data:/app/data
+    environment:
+      # Встанови FIREBASE_URL щоб увімкнути хмарну синхронізацію:
+      # FIREBASE_URL: "https://<project>-default-rtdb.firebaseio.com"
+      FIREBASE_URL: ""
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8080/api/health"]
+      interval: 15s
+      timeout:  5s
+      retries:  3
+
+volumes:
+  estate-data:
+    driver: local
