@@ -5,11 +5,7 @@
 #include <iostream>
 using namespace std;
 
-// ─── TransactionLog реалізує IObserver ───────────────────────────────────────
-// Кожна мутація (add/delete/rent/buy/price) записується у таблицю SQLite.
-// GET /api/transactions повертає весь лог у JSON.
-
-class TransactionLog : public IObserver {
+class TransactionLog : public IObserver{
 private:
     sqlite3* db;
 
@@ -20,9 +16,9 @@ private:
     }
 
 public:
-    explicit TransactionLog(const string& dbPath = "estate.db") {
+    explicit TransactionLog(const string& dbPath = "estate.db"){
         sqlite3_open(dbPath.c_str(), &db);
-        exec("PRAGMA journal_mode=WAL;");
+        exec("PRAGMA journal_mode=WAL;"); 
         exec("CREATE TABLE IF NOT EXISTS TransactionLog ("
              "ID        INTEGER PRIMARY KEY AUTOINCREMENT,"
              "TIMESTAMP TEXT    DEFAULT (datetime('now','localtime')),"
@@ -31,14 +27,12 @@ public:
              "DETAILS   TEXT);");
     }
 
-    // ── IObserver ─────────────────────────────────────────────────────────────
     void onEvent(const string& action, const string& propertyName) override {
         string sql = "INSERT INTO TransactionLog (ACTION, PROPERTY) VALUES ('"
                    + action + "','" + propertyName + "');";
         exec(sql);
     }
 
-    // ── Повертає всі записи у форматі JSON-масиву ─────────────────────────────
     string getAllJson() {
         const char* sql =
             "SELECT ID, TIMESTAMP, ACTION, PROPERTY "
@@ -47,8 +41,8 @@ public:
         string result = "[";
         bool first = true;
 
-        if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) == SQLITE_OK) {
-            while (sqlite3_step(stmt) == SQLITE_ROW) {
+        if(sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) == SQLITE_OK){
+            while(sqlite3_step(stmt) == SQLITE_ROW){
                 if (!first) result += ",";
                 first = false;
                 auto col = [&](int i) -> string {
@@ -65,7 +59,7 @@ public:
         return result + "]";
     }
 
-    int getCount() {
+    int getCount(){
         sqlite3_stmt* stmt;
         int count = 0;
         if (sqlite3_prepare_v2(db, "SELECT COUNT(*) FROM TransactionLog;",

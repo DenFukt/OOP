@@ -9,7 +9,6 @@
 #include <algorithm>
 #include <fstream>
 
-// POSIX
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
@@ -18,17 +17,16 @@
 #include "JsonHelper.h"
 using namespace std;
 
-// ─── HTTP Request / Response ─────────────────────────────────────────────────
 struct HttpRequest {
     string method, path, body;
     map<string, string> headers;
-    map<string, string> pathParams; // :name → value
+    map<string, string> pathParams;
 };
 
 struct HttpResponse {
-    int         status      = 200;
-    string      contentType = "application/json";
-    string      body;
+    int status = 200;
+    string contentType = "application/json";
+    string body;
 
     static HttpResponse ok(const string& json) {
         return {200, "application/json", json};
@@ -46,15 +44,13 @@ struct HttpResponse {
 
 using Handler = function<HttpResponse(const HttpRequest&)>;
 
-// ─── Route ────────────────────────────────────────────────────────────────────
 struct Route {
     string method;
-    vector<string> parts; // "/api/properties/:name/rent" → ["api","properties",":name","rent"]
+    vector<string> parts;
     Handler handler;
 
     bool match(const string& m, const string& url, map<string,string>& params) const {
         if (m != method) return false;
-        // split url
         vector<string> urlParts;
         stringstream ss(url);
         string seg;
@@ -73,14 +69,12 @@ struct Route {
     }
 };
 
-// ─── HTTP Server ──────────────────────────────────────────────────────────────
 class HttpServer {
 private:
-    int            _port;
-    vector<Route>  _routes;
-    bool           _running = false;
+    int _port;
+    vector<Route> _routes;
+    bool _running = false;
 
-    // Розбиває path на сегменти
     vector<string> splitPath(const string& path) {
         vector<string> parts;
         stringstream ss(path);
@@ -90,7 +84,6 @@ private:
         return parts;
     }
 
-    // Реєстрація маршруту
     void addRoute(const string& method, const string& path, Handler h) {
         Route r;
         r.method  = method;
@@ -99,24 +92,20 @@ private:
         _routes.push_back(r);
     }
 
-    // Парсинг HTTP-запиту з raw-рядка
     HttpRequest parseRequest(const string& raw) {
         HttpRequest req;
         istringstream stream(raw);
         string line;
 
-        // Перший рядок: METHOD PATH HTTP/1.1
         getline(stream, line);
         if (!line.empty() && line.back() == '\r') line.pop_back();
         istringstream fl(line);
         string version;
         fl >> req.method >> req.path >> version;
 
-        // Відрізати query string
         auto q = req.path.find('?');
         if (q != string::npos) req.path = req.path.substr(0, q);
 
-        // Заголовки
         size_t contentLength = 0;
         while (getline(stream, line)) {
             if (!line.empty() && line.back() == '\r') line.pop_back();
@@ -124,8 +113,7 @@ private:
             auto colon = line.find(':');
             if (colon != string::npos) {
                 string key = line.substr(0, colon);
-                string val = line.substr(colon + 2); // skip ": "
-                // lowercase key
+                string val = line.substr(colon + 2);
                 transform(key.begin(), key.end(), key.begin(), ::tolower);
                 req.headers[key] = val;
                 if (key == "content-length")
@@ -133,7 +121,6 @@ private:
             }
         }
 
-        // Тіло
         if (contentLength > 0) {
             req.body.resize(contentLength);
             stream.read(&req.body[0], contentLength);
@@ -141,7 +128,6 @@ private:
         return req;
     }
 
-    // Формування HTTP-відповіді
     string buildResponse(const HttpResponse& res) {
         static map<int,string> statusText = {
             {200,"OK"},{201,"Created"},{204,"No Content"},
@@ -159,7 +145,6 @@ private:
         return r;
     }
 
-    // Обробка одного клієнта
     void handleClient(int clientFd) {
         char buf[65536] = {};
         recv(clientFd, buf, sizeof(buf) - 1, 0);
@@ -167,7 +152,6 @@ private:
 
         HttpRequest req = parseRequest(raw);
 
-        // OPTIONS preflight (CORS)
         if (req.method == "OPTIONS") {
             HttpResponse res;
             res.status = 204;
@@ -178,7 +162,6 @@ private:
             return;
         }
 
-        // Пошук маршруту
         HttpResponse response = HttpResponse::notFound("Route not found: " + req.path);
         for (auto& route : _routes) {
             map<string,string> params;
@@ -197,13 +180,11 @@ private:
 public:
     explicit HttpServer(int port) : _port(port) {}
 
-    // ── Реєстрація маршрутів ──────────────────────────────────────────────────
     void get(const string& path, Handler h)    { addRoute("GET",    path, h); }
     void post(const string& path, Handler h)   { addRoute("POST",   path, h); }
     void patch(const string& path, Handler h)  { addRoute("PATCH",  path, h); }
     void del(const string& path, Handler h)    { addRoute("DELETE", path, h); }
 
-    // ── Запуск сервера ────────────────────────────────────────────────────────
     void listen() {
         int serverFd = socket(AF_INET, SOCK_STREAM, 0);
         int opt = 1;
@@ -228,7 +209,6 @@ public:
             int clientFd = accept(serverFd, (sockaddr*)&clientAddr, &addrLen);
             if (clientFd < 0) continue;
 
-            // Кожен клієнт в окремому потоці
             thread([this, clientFd]() {
                 handleClient(clientFd);
             }).detach();

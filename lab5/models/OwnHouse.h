@@ -1,7 +1,7 @@
 #pragma once
 #include "Property.h"
 
-class OwnHouse : public Property {
+class OwnHouse : public Property{
 public:
     string address;
     double area, rentPrice, landArea;
@@ -23,15 +23,15 @@ public:
 
     string toJson() const override {
         return "{\"type\":\"OwnHouse\","
-               "\"name\":\""     + name    + "\","
+               "\"name\":\"" + name + "\","
                "\"address\":\""  + address + "\","
-               "\"area\":"       + to_string(area)      + ","
-               "\"price\":"      + to_string(price)     + ","
+               "\"area\":" + to_string(area) + ","
+               "\"price\":" + to_string(price) + ","
                "\"rentPrice\":"  + to_string(rentPrice) + ","
-               "\"landArea\":"   + to_string(landArea)  + ","
-               "\"hasGarage\":"  + (hasGarage  ? "true":"false") + ","
-               "\"isRented\":"   + (isRented   ? "true":"false") + ","
-               "\"isBought\":"   + (isBought   ? "true":"false") + "}";
+               "\"landArea\":" + to_string(landArea) + ","
+               "\"hasGarage\":" + (hasGarage  ? "true":"false") + ","
+               "\"isRented\":" + (isRented   ? "true":"false") + ","
+               "\"isBought\":" + (isBought   ? "true":"false") + "}";
     }
 
     string getInsertSQL() override {

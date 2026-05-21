@@ -1,11 +1,11 @@
 #pragma once
 #include "Property.h"
 
-class Apartment : public Property {
+class Apartment : public Property{
 public:
     string address;
     double area, rentPrice;
-    int    floor, rooms;
+    int floor, rooms;
     Passport passport;
 
     Apartment(string n, string addr, double a, double p, double rp,
@@ -24,16 +24,16 @@ public:
 
     string toJson() const override {
         return "{\"type\":\"Apartment\","
-               "\"name\":\""       + name    + "\","
-               "\"address\":\""    + address + "\","
-               "\"area\":"         + to_string(area)      + ","
-               "\"price\":"        + to_string(price)     + ","
-               "\"rentPrice\":"    + to_string(rentPrice) + ","
-               "\"floor\":"        + to_string(floor)     + ","
-               "\"rooms\":"        + to_string(rooms)     + ","
-               "\"date\":\""       + passport.registrationDate + "\","
-               "\"isRented\":"     + (isRented ? "true":"false") + ","
-               "\"isBought\":"     + (isBought ? "true":"false") + "}";
+               "\"name\":\"" + name + "\","
+               "\"address\":\"" + address + "\","
+               "\"area\":" + to_string(area) + ","
+               "\"price\":" + to_string(price) + ","
+               "\"rentPrice\":" + to_string(rentPrice) + ","
+               "\"floor\":" + to_string(floor) + ","
+               "\"rooms\":" + to_string(rooms) + ","
+               "\"date\":\"" + passport.registrationDate + "\","
+               "\"isRented\":" + (isRented ? "true":"false") + ","
+               "\"isBought\":" + (isBought ? "true":"false") + "}";
     }
 
     string getInsertSQL() override {

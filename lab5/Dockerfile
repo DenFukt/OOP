@@ -1,4 +1,3 @@
-# Stage 1: Build
 FROM ubuntu:22.04 AS builder
 
 RUN apt-get update && apt-get install -y \
@@ -16,7 +15,6 @@ RUN gcc -c sqlite3.c -o sqlite3.o
 RUN g++ -std=c++17 -I. -pthread \
     main.cpp sqlite3.o -o lab5 -ldl -lpthread
 
-# Stage 2: Runtime
 FROM ubuntu:22.04
 
 RUN apt-get update && apt-get install -y \
@@ -34,5 +32,4 @@ HEALTHCHECK --interval=15s --timeout=5s --retries=3 \
 
 ENV FIREBASE_URL=""
 
-# Render сам передає PORT через env
 CMD ["./lab5"]

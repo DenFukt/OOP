@@ -8,11 +8,6 @@
 #include <iostream>
 using namespace std;
 
-// ─── EstateService ────────────────────────────────────────────────────────────
-// SRP: тільки бізнес-логіка. Не знає про HTTP, SQL, Firebase.
-// DIP: залежить від IRepository та ICloudSync (абстракцій), не реалізацій.
-// Observer: сповіщає підписників (TransactionLog, EventLogger) про кожну подію.
-
 class EstateService : public IEstateService, public Observable {
 private:
     shared_ptr<IRepository> _repo;
@@ -32,10 +27,8 @@ public:
 
     void subscribe(IObserver* obs) override { Observable::subscribe(obs); }
 
-    // ── Завантаження з БД при старті ─────────────────────────────────────────
     void loadData() override { _repo->loadAll(_list); }
 
-    // ── CRUD ──────────────────────────────────────────────────────────────────
     void addProperty(Property* p) override {
         _list.push_back(p);
         _repo->save(p);
@@ -107,7 +100,6 @@ public:
         return total;
     }
 
-    // ── JSON для REST API ─────────────────────────────────────────────────────
     string getAllJson() override {
         string result = "[";
         bool first = true;
@@ -119,6 +111,5 @@ public:
         return result + "]";
     }
 
-    // ── Публічний пошук (для тестів і фасаду) ────────────────────────────────
     Property* findByName(const string& name) { return find(name); }
 };

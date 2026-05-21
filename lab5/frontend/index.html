@@ -27,14 +27,12 @@
   main{padding:1.5rem 2rem}
   .page{display:none}.page.active{display:block}
 
-  /* Stats */
   .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem}
   .stat{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1rem}
   .stat-val{font-size:1.8rem;font-weight:700}
   .stat-lbl{font-size:.78rem;color:var(--muted);margin-top:4px}
   .accent{color:var(--accent)}.green{color:var(--accent2)}.warn{color:var(--warn)}
 
-  /* Table */
   .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
   table{width:100%;border-collapse:collapse;font-size:.87rem}
   th{background:var(--card);padding:.7rem 1rem;text-align:left;color:var(--muted);
@@ -49,7 +47,6 @@
   .chip.yes{background:#1a3a2a;color:#6ee7b7}
   .chip.no {background:#2a1f1f;color:#fca5a5}
 
-  /* Buttons */
   .btn{border:none;border-radius:6px;padding:.4rem .85rem;cursor:pointer;
        font-size:.82rem;font-weight:500;transition:.15s}
   .btn-sm{padding:.25rem .6rem;font-size:.75rem}
@@ -65,7 +62,6 @@
   .btn-ghost:hover{background:var(--border)}
   .actions{display:flex;gap:5px;flex-wrap:wrap}
 
-  /* Form */
   .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.8rem}
   .field{display:flex;flex-direction:column;gap:.35rem}
   label{font-size:.78rem;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.04em}
@@ -74,7 +70,6 @@
   input:focus,select:focus{outline:none;border-color:var(--accent)}
   .form-actions{margin-top:1rem;display:flex;gap:.75rem;align-items:center}
 
-  /* Log table */
   .log-table td:first-child{color:var(--muted);font-size:.78rem;font-family:monospace}
   .action-chip{padding:2px 8px;border-radius:99px;font-size:.73rem;font-weight:500}
   .PROPERTY_ADDED{background:#1e3a5f;color:#93c5fd}
@@ -86,7 +81,6 @@
   .PRICE_UPDATED{background:#1a1a2a;color:#a5b4fc}
   .REPAIR_STARTED{background:#2a1a1a;color:#fdba74}
 
-  /* Insights */
   .insights-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem}
   .endpoint-row{display:flex;align-items:center;gap:.75rem;padding:.5rem 0;
                 border-bottom:1px solid var(--border);font-size:.85rem}
@@ -94,7 +88,6 @@
   .ep-hits{color:var(--text);min-width:40px;text-align:right}
   .ep-avg{color:var(--muted);font-size:.78rem;min-width:60px;text-align:right}
 
-  /* Toast */
   #toast{position:fixed;bottom:1.5rem;right:1.5rem;padding:.65rem 1.1rem;
          border-radius:8px;font-size:.87rem;opacity:0;transition:.3s;
          pointer-events:none;max-width:320px;z-index:999}
@@ -130,7 +123,6 @@
 
 <main>
 
-<!-- ══ PROPERTIES ══════════════════════════════════════════════════════════ -->
 <div class="page active" id="page-properties">
   <div class="stats">
     <div class="stat"><div class="stat-val accent" id="s-total">—</div><div class="stat-lbl">Всього об'єктів</div></div>
@@ -150,7 +142,6 @@
   </div>
 </div>
 
-<!-- ══ ADD ═════════════════════════════════════════════════════════════════ -->
 <div class="page" id="page-add">
   <div class="card" style="padding:1.5rem">
     <div class="section-title">Новий об'єкт нерухомості</div>
@@ -171,7 +162,6 @@
       <div class="field"><label>Ціна оренди (грн/міс)</label><input id="f-rentPrice" type="number" placeholder="12000"></div>
     </div>
 
-    <!-- Apartment fields -->
     <div id="fields-apartment" style="margin-top:.8rem">
       <hr class="divider">
       <div class="form-grid">
@@ -181,7 +171,6 @@
       </div>
     </div>
 
-    <!-- Commercial fields -->
     <div id="fields-commercial" style="display:none;margin-top:.8rem">
       <hr class="divider">
       <div class="form-grid">
@@ -189,7 +178,6 @@
       </div>
     </div>
 
-    <!-- OwnHouse fields -->
     <div id="fields-house" style="display:none;margin-top:.8rem">
       <hr class="divider">
       <div class="form-grid">
@@ -207,7 +195,6 @@
   </div>
 </div>
 
-<!-- ══ TRANSACTIONS ════════════════════════════════════════════════════════ -->
 <div class="page" id="page-transactions">
   <div class="card">
     <table class="log-table">
@@ -217,7 +204,6 @@
   </div>
 </div>
 
-<!-- ══ INSIGHTS ════════════════════════════════════════════════════════════ -->
 <div class="page" id="page-insights">
   <div class="stats">
     <div class="stat"><div class="stat-val accent" id="i-total">—</div><div class="stat-lbl">Всього запитів</div></div>
@@ -229,7 +215,6 @@
   </div>
 </div>
 
-<!-- ══ HEALTH ══════════════════════════════════════════════════════════════ -->
 <div class="page" id="page-health">
   <div class="stats" id="health-cards"></div>
   <div class="card" style="padding:1.25rem;margin-top:1rem">
@@ -246,14 +231,12 @@
 <script>
 const API = '';
 
-// ── Toast ─────────────────────────────────────────────────────────────────────
 function toast(msg, type='success') {
   const el = document.getElementById('toast');
   el.textContent = msg; el.className = `show ${type}`;
   setTimeout(() => el.className = '', 2800);
 }
 
-// ── Tabs ──────────────────────────────────────────────────────────────────────
 function showTab(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab') .forEach(t => t.classList.remove('active'));
@@ -265,7 +248,6 @@ function showTab(name) {
   if (name === 'health')       loadHealth();
 }
 
-// ── Load properties ───────────────────────────────────────────────────────────
 async function loadProperties() {
   const [props, incomeRes] = await Promise.all([
     fetch('/api/properties').then(r => r.json()),
@@ -309,7 +291,6 @@ function typeName(t) {
   return {Apartment:'Квартира', Commercial:'Комерція', OwnHouse:'Будинок'}[t] || t;
 }
 
-// ── Actions ───────────────────────────────────────────────────────────────────
 async function api(url, method='GET', body=null) {
   const opts = { method, headers: {'Content-Type':'application/json'} };
   if (body) opts.body = JSON.stringify(body);
@@ -341,7 +322,6 @@ async function promptPrice(name) {
   toast(`Ціну оновлено`); loadProperties();
 }
 
-// ── Add form ──────────────────────────────────────────────────────────────────
 function updateTypeFields() {
   const t = document.getElementById('f-type').value;
   document.getElementById('fields-apartment').style.display = t==='Apartment'?'block':'none';
@@ -383,7 +363,6 @@ function clearForm() {
     .forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
 }
 
-// ── Transactions ──────────────────────────────────────────────────────────────
 async function loadTransactions() {
   const data = await fetch('/api/transactions').then(r => r.json());
   const tbody = document.getElementById('txBody');
@@ -396,7 +375,6 @@ async function loadTransactions() {
     </tr>`).join('');
 }
 
-// ── Insights ──────────────────────────────────────────────────────────────────
 async function loadInsights() {
   const d = await fetch('/api/insights').then(r => r.json());
   document.getElementById('i-total') .textContent = d.totalRequests;
@@ -413,7 +391,6 @@ async function loadInsights() {
     </div>`).join('');
 }
 
-// ── Health ────────────────────────────────────────────────────────────────────
 async function loadHealth() {
   const d = await fetch('/api/health').then(r => r.json());
   const dot = document.getElementById('healthDot');
@@ -431,7 +408,6 @@ async function loadHealth() {
   document.getElementById('health-raw').textContent = JSON.stringify(d, null, 2);
 }
 
-// ── Init ──────────────────────────────────────────────────────────────────────
 loadProperties();
 loadHealth();
 setInterval(loadHealth, 30000);

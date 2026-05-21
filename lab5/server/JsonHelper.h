@@ -5,10 +5,8 @@
 #include <sstream>
 using namespace std;
 
-// ─── Мінімальний JSON-хелпер ─────────────────────────────────────────────────
 namespace Json {
 
-// Екранування рядка
 inline string str(const string& s) {
     string r = "\"";
     for (char c : s) {
@@ -30,7 +28,6 @@ inline string num(double n) {
 inline string num(int n)  { return to_string(n); }
 inline string boolean(bool b) { return b ? "true" : "false"; }
 
-// Будує об'єкт з пар key→value (значення вже мають бути JSON-рядками)
 inline string obj(vector<pair<string,string>> fields) {
     string r = "{";
     for (size_t i = 0; i < fields.size(); ++i) {
@@ -40,7 +37,6 @@ inline string obj(vector<pair<string,string>> fields) {
     return r + "}";
 }
 
-// Будує масив з готових JSON-рядків
 inline string arr(const vector<string>& items) {
     string r = "[";
     for (size_t i = 0; i < items.size(); ++i) {
@@ -50,8 +46,6 @@ inline string arr(const vector<string>& items) {
     return r + "]";
 }
 
-// ─── Мінімальний парсер ───────────────────────────────────────────────────────
-// Повертає map<key, value> де value — сирий рядок (без зовнішніх лапок для рядків)
 inline map<string,string> parse(const string& body) {
     map<string,string> result;
     size_t i = 0;
@@ -59,18 +53,18 @@ inline map<string,string> parse(const string& body) {
 
     skip();
     if (i >= body.size() || body[i] != '{') return result;
-    i++; // skip {
+    i++;
 
     while (i < body.size() && body[i] != '}') {
         skip();
         if (body[i] != '"') break;
-        i++; // skip opening "
+        i++;
         string key;
         while (i < body.size() && body[i] != '"') key += body[i++];
-        i++; // skip closing "
+        i++;
         skip();
         if (body[i] != ':') break;
-        i++; // skip :
+        i++;
         skip();
 
         string val;
@@ -81,11 +75,9 @@ inline map<string,string> parse(const string& body) {
                 else val += body[i];
                 i++;
             }
-            i++; // skip closing "
+            i++;
         } else {
-            // number / boolean / null
             while (i < body.size() && body[i]!=',' && body[i]!='}') val += body[i++];
-            // trim
             while (!val.empty() && (val.back()==' '||val.back()=='\n')) val.pop_back();
         }
         result[key] = val;
@@ -96,4 +88,4 @@ inline map<string,string> parse(const string& body) {
     return result;
 }
 
-} // namespace Json
+}

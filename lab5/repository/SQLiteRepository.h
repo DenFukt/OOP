@@ -20,7 +20,7 @@ private:
     }
 
 public:
-    explicit SQLiteRepository(const string& path = "estate.db") {
+    explicit SQLiteRepository(const string& path = "estate.db"){
         sqlite3_open(path.c_str(), &db);
         exec("PRAGMA journal_mode=WAL;");
         exec("CREATE TABLE IF NOT EXISTS Properties ("
@@ -32,7 +32,7 @@ public:
              "BUSINESS_TYPE TEXT, LAND_AREA REAL, HAS_GARAGE INTEGER);");
     }
 
-    void save(Property* p) override   { exec(p->getInsertSQL()); }
+    void save(Property* p) override { exec(p->getInsertSQL()); }
     void update(Property* p) override { exec(p->getUpdateSQL()); }
     void remove(string name) override {
         exec("DELETE FROM Properties WHERE NAME='" + name + "';");
@@ -46,7 +46,7 @@ public:
         sqlite3_stmt* stmt;
         if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) return;
 
-        while (sqlite3_step(stmt) == SQLITE_ROW) {
+        while(sqlite3_step(stmt) == SQLITE_ROW){
             auto col = [&](int i) -> string {
                 auto* t = sqlite3_column_text(stmt, i);
                 return t ? (const char*)t : "";
@@ -64,9 +64,11 @@ public:
                 p = new Apartment(name, addr, area, price, rent,
                                   sqlite3_column_int(stmt,9),
                                   sqlite3_column_int(stmt,10), date);
-            } else if (type == "Commercial") {
+            }
+            else if (type == "Commercial") {
                 p = new Commercial(name, addr, area, price, rent, col(11));
-            } else if (type == "OwnHouse") {
+            }
+            else if (type == "OwnHouse") {
                 p = new OwnHouse(name, addr, area, price, rent,
                                  sqlite3_column_double(stmt,12),
                                  sqlite3_column_int(stmt,13));

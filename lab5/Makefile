@@ -2,7 +2,6 @@ CXX      = g++
 CXXFLAGS = -std=c++17 -I. -pthread -Wall
 LDFLAGS  = -ldl -lpthread
 
-# ── Головна програма (HTTP сервер) ────────────────────────────────────────────
 all: setup lab5
 
 setup:
@@ -17,7 +16,6 @@ lab5: main.cpp sqlite3.o
 	$(CXX) $(CXXFLAGS) main.cpp sqlite3.o -o lab5 $(LDFLAGS)
 	@echo "✓ lab5 зібрано"
 
-# ── Тести ─────────────────────────────────────────────────────────────────────
 tests: tests.cpp sqlite3.o
 	$(CXX) $(CXXFLAGS) tests.cpp sqlite3.o -o tests $(LDFLAGS)
 	@echo "✓ tests зібрано"
@@ -25,7 +23,6 @@ tests: tests.cpp sqlite3.o
 run-tests: tests
 	./tests
 
-# ── Docker ────────────────────────────────────────────────────────────────────
 docker-build:
 	docker-compose build
 
@@ -35,7 +32,6 @@ docker-up:
 docker-down:
 	docker-compose down
 
-# ── Очищення ──────────────────────────────────────────────────────────────────
 clean:
 	rm -f lab5 tests sqlite3.o
 

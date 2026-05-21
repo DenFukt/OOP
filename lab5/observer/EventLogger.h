@@ -7,12 +7,11 @@
 #include <string>
 using namespace std;
 
-// Конкретний спостерігач: виводить у консоль і пише у файл
-class EventLogger : public IObserver {
+class EventLogger : public IObserver{
 private:
     ofstream logFile;
 
-    string timestamp() {
+    string timestamp(){
         time_t now = time(nullptr);
         char buf[20];
         strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", localtime(&now));
@@ -20,7 +19,7 @@ private:
     }
 
 public:
-    explicit EventLogger(const string& filename = "events.log") {
+    explicit EventLogger(const string& filename = "events.log"){
         logFile.open(filename, ios::app);
     }
 
@@ -34,17 +33,16 @@ public:
     ~EventLogger() { if (logFile.is_open()) logFile.close(); }
 };
 
-// Клас-видавець — базовий для сервісів що хочуть підтримувати Observer
 class Observable {
 protected:
     vector<IObserver*> observers;
 
 public:
-    void subscribe(IObserver* obs)   { observers.push_back(obs); }
-    void unsubscribe(IObserver* obs) {
+    void subscribe(IObserver* obs) { observers.push_back(obs); }
+    void unsubscribe(IObserver* obs){
         observers.erase(remove(observers.begin(), observers.end(), obs), observers.end());
     }
-    void notify(const string& ev, const string& name) {
+    void notify(const string& ev, const string& name){
         for (auto* o : observers) o->onEvent(ev, name);
     }
 };

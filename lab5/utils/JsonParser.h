@@ -2,7 +2,6 @@
 #include <string>
 using namespace std;
 
-// Простий парсер JSON-полів без зовнішніх бібліотек
 inline string jsonField(const string& json, const string& key) {
     string search = "\"" + key + "\":";
     size_t pos = json.find(search);

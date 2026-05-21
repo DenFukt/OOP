@@ -18,7 +18,6 @@
 #include <string>
 using namespace std;
 
-// ── Mock-репозиторій ──────────────────────────────────────────────────────────
 class MockRepo : public IRepository {
 public:
     void save   (Property*)                       override {}
@@ -27,7 +26,6 @@ public:
     void loadAll(DoublyLinkedList<Property*>&)    override {}
 };
 
-// ── Mock-спостерігач ──────────────────────────────────────────────────────────
 class MockObserver : public IObserver {
 public:
     vector<pair<string,string>> events;
@@ -36,7 +34,6 @@ public:
     }
 };
 
-// ── Mock-хмара ────────────────────────────────────────────────────────────────
 class MockCloud : public ICloudSync {
 public:
     int saveCount=0, updateCount=0, deleteCount=0;
@@ -46,9 +43,6 @@ public:
     void syncDelete(const string&)                override { deleteCount++; }
 };
 
-// ════════════════════════════════════════════════════════════════════
-// 1. PropertyFactory (Creational pattern)
-// ════════════════════════════════════════════════════════════════════
 TEST_CASE("PropertyFactory — Apartment (позитивний)", "[factory]") {
     PropertyParams p;
     p.type="Apartment"; p.name="Test"; p.address="вул.1";
@@ -85,9 +79,6 @@ TEST_CASE("PropertyFactory — невідомий тип кидає винято
     REQUIRE_THROWS_AS(PropertyFactory::create(p), invalid_argument);
 }
 
-// ════════════════════════════════════════════════════════════════════
-// 2. DoublyLinkedList
-// ════════════════════════════════════════════════════════════════════
 TEST_CASE("DoublyLinkedList — push_back і size", "[list]") {
     DoublyLinkedList<int> lst;
     REQUIRE(lst.size() == 0);
@@ -116,9 +107,6 @@ TEST_CASE("DoublyLinkedList — clear очищає список", "[list]") {
     REQUIRE(lst.size() == 0);
 }
 
-// ════════════════════════════════════════════════════════════════════
-// 3. Observer pattern
-// ════════════════════════════════════════════════════════════════════
 TEST_CASE("Observer — підписник отримує подію (позитивний)", "[observer]") {
     auto repo = make_shared<MockRepo>();
     EstateService svc(repo);
@@ -160,9 +148,6 @@ TEST_CASE("Observer — без підписників не падає (нега�
     svc.deleteProperty("HX");
 }
 
-// ════════════════════════════════════════════════════════════════════
-// 4. EstateService — CRUD
-// ════════════════════════════════════════════════════════════════════
 TEST_CASE("EstateService — додавання та пошук (позитивний)", "[service]") {
     auto repo = make_shared<MockRepo>();
     EstateService svc(repo);
@@ -251,9 +236,6 @@ TEST_CASE("EstateService — дохід без оренди = 0 (негатив�
     REQUIRE(svc.calculateTotalIncome() == Approx(0.0));
 }
 
-// ════════════════════════════════════════════════════════════════════
-// 5. Cloud sync
-// ════════════════════════════════════════════════════════════════════
 TEST_CASE("EstateService — хмарна синхронізація при додаванні", "[cloud]") {
     auto repo  = make_shared<MockRepo>();
     auto cloud = make_shared<MockCloud>();
@@ -267,9 +249,6 @@ TEST_CASE("EstateService — хмарна синхронізація при до
     REQUIRE(cloud->deleteCount == 1);
 }
 
-// ════════════════════════════════════════════════════════════════════
-// 6. Property::totalObjects
-// ════════════════════════════════════════════════════════════════════
 TEST_CASE("Property::totalObjects — коректний лічильник", "[model]") {
     int before = Property::totalObjects;
     auto* a = new Apartment("X1","A",40,500,50,1,1,"");
@@ -281,9 +260,6 @@ TEST_CASE("Property::totalObjects — коректний лічильник", "[
     REQUIRE(Property::totalObjects == before);
 }
 
-// ════════════════════════════════════════════════════════════════════
-// 7. toJson() та JsonParser
-// ════════════════════════════════════════════════════════════════════
 TEST_CASE("Apartment::toJson() містить потрібні поля", "[json]") {
     Apartment a("AptJson","вул.1",55,1200,120,3,2,"01.01");
     string j = a.toJson();
