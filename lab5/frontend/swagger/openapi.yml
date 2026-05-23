@@ -45,7 +45,7 @@ paths:
       responses:
         '201':
           description: Об'єкт успішно створено
-    /api/properties/{name}:
+  /api/properties/{name}:
     delete:
       summary: Видалити об'єкт нерухомості
       parameters:
