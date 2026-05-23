@@ -1,0 +1,148 @@
+openapi: 3.0.0
+info:
+  title: Estate Manager API
+  description: API для керування нерухомістю (Лабораторна робота 5)
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Локальний сервер
+  - url: https://estate-manager-lab5.onrender.com
+    description: Сервер на Render
+paths:
+  /api/health:
+    get:
+      summary: Перевірка статусу сервера
+      responses:
+        '200':
+          description: Успішна відповідь
+          content:
+            application/json:
+              example: {"status":"ok","version":"1.0.0","uptime":179,"db":"connected","properties":0}
+  /api/properties:
+    get:
+      summary: Отримати весь список нерухомості
+      responses:
+        '200':
+          description: Список об'єктів
+    post:
+      summary: Додати новий об'єкт нерухомості
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  example: "Apartment"
+                name:
+                  type: string
+                  example: "Квартира в центрі"
+                address:
+                  type: string
+                  example: "вул. Шевченка, 1"
+      responses:
+        '201':
+          description: Об'єкт успішно створено
+    /api/properties/{name}:
+    delete:
+      summary: Видалити об'єкт нерухомості
+      parameters:
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+          description: Точна назва об'єкта (наприклад, "Квартира в центрі")
+      responses:
+        '200':
+          description: Об'єкт успішно видалено
+        '404':
+          description: Об'єкт не знайдено
+
+  /api/properties/{name}/rent:
+    put:
+      summary: Змінити статус оренди (Здати/Звільнити)
+      parameters:
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Статус оренди змінено
+
+  /api/properties/{name}/buy:
+    put:
+      summary: Купити об'єкт
+      parameters:
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Об'єкт придбано
+
+  /api/properties/{name}/sell:
+    put:
+      summary: Виставити об'єкт на продаж
+      parameters:
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Об'єкт виставлено на продаж
+
+  /api/properties/{name}/price:
+    put:
+      summary: Оновити вартість об'єкта
+      parameters:
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price:
+                  type: number
+                  example: 1850000
+      responses:
+        '200':
+          description: Ціну оновлено
+
+  /api/income:
+    get:
+      summary: Розрахувати дохід від орендованої нерухомості
+      responses:
+        '200':
+          description: Загальний дохід
+          content:
+            application/json:
+              example: {"income": 45000}
+
+  /api/transactions:
+    get:
+      summary: Отримати історію всіх транзакцій
+      responses:
+        '200':
+          description: Масив подій системи (логування)
+
+  /api/insights:
+    get:
+      summary: Статистика використання API
+      responses:
+        '200':
+          description: Кількість запитів та час роботи (Uptime)
